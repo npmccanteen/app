@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <meta name="description" content="DocTools by Munaf Wasif - Free PDF tools for MBBS students" />
+
+  <title>DocTools by Munaf Wasif</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="DocTools" />
+
+  <!-- Fonts & CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#tools">Tools</a>
+        <a href="#about">About</a>
+        <a href="login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle">☰</button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h1>সব PDF টুল <span>এক জায়গায়</span></h1>
+      <p>MBBS স্টুডেন্টদের জন্য ফ্রি, ফাস্ট আর সিকিউর PDF টুলস — কোনো ফাইল সার্ভারে যায় না।</p>
+      <div class="hero-btns">
+        <a href="#tools" class="btn-primary">🚀 টুল দেখুন</a>
+        <a href="#about" class="btn-ghost">ℹ️ আরো জানুন</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools Grid -->
+  <section id="tools" class="tools-section">
+    <h2 class="section-title">🛠️ Available Tools</h2>
+    <p class="section-sub">সব টুল ব্রাউজারেই কাজ করে — privacy 100% safe</p>
+
+    <div class="tools-grid">
+
+      <a href="tools/merge.html" class="tool-card">
+        <div class="tool-icon">🔗</div>
+        <h3>PDF Merge</h3>
+        <p>একাধিক PDF এক ফাইলে জোড়া লাগান</p>
+      </a>
+
+      <a href="tools/split.html" class="tool-card">
+        <div class="tool-icon">✂️</div>
+        <h3>PDF Split</h3>
+        <p>পেজ রেঞ্জ অনুযায়ী PDF আলাদা করুন</p>
+      </a>
+
+      <a href="tools/compress.html" class="tool-card">
+        <div class="tool-icon">🗜️</div>
+        <h3>PDF Compress</h3>
+        <p>ফাইলের সাইজ কমিয়ে ফেলুন</p>
+      </a>
+
+      <a href="tools/img2pdf.html" class="tool-card">
+        <div class="tool-icon">🖼️</div>
+        <h3>Image → PDF</h3>
+        <p>ছবি থেকে PDF বানান</p>
+      </a>
+
+      <a href="tools/pdf2img.html" class="tool-card">
+        <div class="tool-icon">📷</div>
+        <h3>PDF → Image</h3>
+        <p>PDF থেকে ছবি বের করুন</p>
+      </a>
+
+      <a href="tools/scanner.html" class="tool-card">
+        <div class="tool-icon">📸</div>
+        <h3>Scanner</h3>
+        <p>ক্যামেরা দিয়ে স্ক্যান করে PDF</p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="about-section">
+    <h2 class="section-title">ℹ️ About DocTools</h2>
+    <p>
+      DocTools হলো একটি ফ্রি, ওপেন, ব্রাউজার-বেসড PDF টুলকিট — বিশেষভাবে মেডিকেল স্টুডেন্টদের কথা ভেবে বানানো।
+      সব প্রসেসিং আপনার ডিভাইসেই হয়, কোনো ফাইল সার্ভারে আপলোড হয় না।
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+    <p class="footer-small">PWA Ready • Firebase Powered • 100% Client-side</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/pwa.js"></script>
+  <script>
+    // Simple menu toggle
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
