@@ -1,0 +1,136 @@
+/* ============ Lab Values Style ============ */
+
+/* Search */
+.lv-search {
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+.lv-search input {
+  width: 100%;
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  background: #fff;
+  transition: .2s;
+}
+.lv-search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(13,110,253,0.1);
+}
+
+/* Categories */
+.lv-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+.lv-categories button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: .2s;
+  font-family: inherit;
+}
+.lv-categories button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.lv-categories button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* List */
+.lv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Category heading */
+.lv-cat-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 22px 0 6px;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lv-cat-heading:first-child { margin-top: 0; }
+
+/* Row */
+.lv-row {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  transition: .2s;
+}
+.lv-row:hover {
+  border-color: #dbe7ff;
+  box-shadow: 0 4px 14px rgba(13,110,253,0.06);
+}
+
+.lv-row-left {
+  flex: 1;
+  min-width: 0;
+}
+.lv-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.lv-row-name small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.lv-row-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.lv-row-range {
+  font-size: 15px;
+  font-weight: 700;
+  color: #16a34a;
+  font-family: 'Poppins', monospace;
+  white-space: nowrap;
+}
+.lv-row-unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .lv-row {
+    padding: 12px 14px;
+  }
+  .lv-row-name { font-size: 14px; }
+  .lv-row-range { font-size: 14px; }
+  .lv-categories button {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
