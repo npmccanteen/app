@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>Normal Lab Values - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <link rel="stylesheet" href="../css/lab-values.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">🧪</span>
+      <h1>Normal Lab Values</h1>
+      <p>CBC, LFT, RFT, Electrolytes — সব ল্যাব ভ্যালু এক জায়গায়। Bedside reference.</p>
+    </div>
+
+    <!-- Search -->
+    <div class="lv-search">
+      <input type="text" id="lvSearch" placeholder="🔍 টেস্ট খুঁজুন (Hemoglobin, Creatinine, Sodium...)" />
+    </div>
+
+    <!-- Category Filter -->
+    <div class="lv-categories" id="lvCategories">
+      <button data-cat="all" class="active">সব</button>
+      <button data-cat="hematology">🩸 Hematology</button>
+      <button data-cat="biochemistry">🧬 Biochemistry</button>
+      <button data-cat="renal">🫘 Renal</button>
+      <button data-cat="liver">🫀 Liver</button>
+      <button data-cat="electrolyte">⚡ Electrolyte</button>
+      <button data-cat="thyroid">🦋 Thyroid</button>
+      <button data-cat="lipid">🧈 Lipid</button>
+      <button data-cat="abg">💨 ABG</button>
+      <button data-cat="coagulation">🩹 Coagulation</button>
+      <button data-cat="cardiac">❤️ Cardiac</button>
+      <button data-cat="urine">💧 Urine</button>
+    </div>
+
+    <!-- Values List -->
+    <div class="lv-list" id="lvList"></div>
+
+    <div class="lv-empty" id="lvEmpty" style="display:none">
+      <span>🔍</span>
+      <p>কোনো টেস্ট পাওয়া যায়নি</p>
+    </div>
+
+    <div class="info-note" style="margin-top:30px">
+      ⚕️ <strong>মনে রাখবেন:</strong> Lab values laboratory অনুযায়ী সামান্য ভিন্ন হতে পারে। সবসময় নিজের হাসপাতালের reference range দেখুন। এই তথ্য শুধু educational purpose এর জন্য।
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="../js/lab-values.js"></script>
+</body>
+</html>
