@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>PDF to Image - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <style>
+    .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin:20px 0; }
+    .img-item { background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px; text-align:center; }
+    .img-item img { width:100%; border-radius:6px; display:block; }
+    .img-item a { display:block; margin-top:6px; font-size:12px; color:var(--primary); font-weight:600; }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">📷</span>
+      <h1>PDF → Image</h1>
+      <p>PDF এর প্রতিটি পেজকে ছবি (PNG) হিসেবে বের করুন।</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="pdfInput" accept="application/pdf" />
+      <span class="dz-icon">📥</span>
+      <div class="dz-title">PDF ফাইল ড্রপ করুন</div>
+      <div class="dz-sub">অথবা ক্লিক করে সিলেক্ট করুন</div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">রেন্ডার হচ্ছে...</div>
+    </div>
+
+    <div class="img-grid" id="imgGrid"></div>
+
+    <div class="tool-actions" id="actions" style="display:none">
+      <button class="btn-action secondary" id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <div class="info-note">🔒 PDF কোথাও আপলোড হয় না — সব আপনার ডিভাইসেই।</div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const dropZone = document.getElementById('dropZone');
+    const input = document.getElementById('pdfInput');
+    const imgGrid = document.getElementById('imgGrid');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const actions = document.getElementById('actions');
+    const clearBtn = document.getElementById('clearBtn');
+
+    input.addEventListener('change', (e) => handleFile(e.target.files[0]));
+    dropZone.addEventListener('click', () => input.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    clearBtn.onclick = () => {
+      imgGrid.innerHTML = '';
+      actions.style.display = 'none';
+      input.value = '';
+    };
+
+    async function handleFile(file) {
+      if (!file || file.type !== 'application/pdf') return alert('শুধু PDF ফাইল দিন');
+      imgGrid.innerHTML = '';
+      actions.style.display = 'none';
+      progressWrap.classList.add('show');
+      progressFill.style.width = '0%';
+
+      try {
+        const bytes = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const total = pdf.numPages;
+
+        for (let i = 1; i <= total; i++) {
+          progressText.textContent = `পেজ ${i} / ${total} রেন্ডার হচ্ছে...`;
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2.0 });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+          const url = canvas.toDataURL('image/png');
+          const div = document.createElement('div');
+          div.className = 'img-item';
+          div.innerHTML = `
+            <img src="${url}" alt="Page ${i}" />
+            <a href="${url}" download="page-${i}.png">⬇️ Page ${i}</a>
+          `;
+          imgGrid.appendChild(div);
+
+          progressFill.style.width = `${(i / total) * 100}%`;
+        }
+
+        actions.style.display = 'block';
+        setTimeout(() => progressWrap.classList.remove('show'), 700);
+      } catch (err) {
+        alert('❌ সমস্যা: ' + err.message);
+        progressWrap.classList.remove('show');
+      }
+    }
+  </script>
+</body>
+</html>
