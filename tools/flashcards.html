@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>Flashcards - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <link rel="stylesheet" href="../css/flashcards.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">🃏</span>
+      <h1>Flashcard Maker</h1>
+      <p>নিজের flashcard বানান, subject-wise সাজান, আর revision করুন।</p>
+    </div>
+
+    <!-- Home View -->
+    <section id="fcHome">
+
+      <!-- Action buttons -->
+      <div class="fc-actions">
+        <button class="btn-action primary" id="fcNewSet">➕ নতুন Deck</button>
+        <button class="btn-action secondary" id="fcImport">📥 Import (JSON)</button>
+        <button class="btn-action secondary" id="fcExport">📤 Export All</button>
+      </div>
+
+      <!-- Deck list -->
+      <div class="fc-decks" id="fcDecks"></div>
+      <div class="fc-empty" id="fcEmpty">
+        <span>🃏</span>
+        <p>এখনো কোনো deck নেই। <strong>নতুন Deck</strong> বানান।</p>
+      </div>
+    </section>
+
+    <!-- Deck Detail View -->
+    <section id="fcDeckView" style="display:none">
+      <div class="fc-deck-header">
+        <button class="fc-back" id="fcBack">← Back</button>
+        <div class="fc-deck-title">
+          <h2 id="fcDeckName"></h2>
+          <p id="fcDeckCount"></p>
+        </div>
+        <div class="fc-deck-actions">
+          <button class="btn-action primary" id="fcStudy">📚 Study</button>
+          <button class="btn-action secondary" id="fcAddCard">➕ Card</button>
+          <button class="btn-action secondary" id="fcDeleteDeck">🗑️</button>
+        </div>
+      </div>
+
+      <div class="fc-cards" id="fcCards"></div>
+      <div class="fc-empty" id="fcCardsEmpty" style="display:none">
+        <span>📝</span>
+        <p>এই deck এ এখনো কোনো card নেই। <strong>➕ Card</strong> চাপুন।</p>
+      </div>
+    </section>
+
+    <!-- Study Mode -->
+    <section id="fcStudyView" style="display:none">
+      <div class="fc-study-header">
+        <button class="fc-back" id="fcStudyBack">← Back</button>
+        <div class="fc-progress">
+          <div class="fc-progress-text" id="fcProgressText">1 / 5</div>
+          <div class="fc-progress-bar"><div class="fc-progress-fill" id="fcProgressFill"></div></div>
+        </div>
+      </div>
+
+      <div class="fc-card-study" id="fcCardStudy">
+        <div class="fc-card-inner" id="fcCardInner">
+          <div class="fc-card-face fc-card-front">
+            <div class="fc-card-label">প্রশ্ন</div>
+            <div class="fc-card-text" id="fcQuestion"></div>
+            <div class="fc-card-hint">👆 Tap to reveal</div>
+          </div>
+          <div class="fc-card-face fc-card-back">
+            <div class="fc-card-label">উত্তর</div>
+            <div class="fc-card-text" id="fcAnswer"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fc-study-controls">
+        <button class="fc-nav-btn" id="fcPrev">← Previous</button>
+        <button class="fc-nav-btn fc-shuffle" id="fcShuffle">🔀 Shuffle</button>
+        <button class="fc-nav-btn" id="fcNext">Next →</button>
+      </div>
+    </section>
+
+    <div class="info-note" style="margin-top:30px">
+      💾 <strong>মনে রাখবেন:</strong> সব flashcard আপনার ব্রাউজারে (localStorage) সেভ হয়। Export করে backup রাখতে পারবেন।
+    </div>
+  </main>
+
+  <!-- Modal for new deck / new card -->
+  <div class="fc-modal" id="fcModal">
+    <div class="fc-modal-content">
+      <button class="fc-modal-close" id="fcModalClose">✕</button>
+      <div id="fcModalBody"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="../js/flashcards.js"></script>
+</body>
+</html>
