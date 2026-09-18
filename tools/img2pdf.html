@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>Image to PDF - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <style>
+    .img-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; margin:20px 0; }
+    .img-item { position:relative; background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px; text-align:center; }
+    .img-item img { width:100%; height:110px; object-fit:cover; border-radius:6px; }
+    .img-item .remove { position:absolute; top:-6px; right:-6px; background:#e11; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:11px; line-height:22px; }
+    .img-item .name { font-size:11px; color:var(--muted); margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">🖼️</span>
+      <h1>Image → PDF</h1>
+      <p>একাধিক ছবি থেকে একটাই PDF বানান — লেকচার স্লাইড, স্ক্রিনশট যাই হোক।</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="imgInput" accept="image/*" multiple />
+      <span class="dz-icon">📥</span>
+      <div class="dz-title">ছবি এখানে ড্রপ করুন</div>
+      <div class="dz-sub">অথবা ক্লিক করে সিলেক্ট করুন (JPG, PNG, WEBP)</div>
+    </div>
+
+    <div class="img-grid" id="imgGrid"></div>
+
+    <div class="tool-actions">
+      <button class="btn-action primary" id="convertBtn" disabled>📄 Convert to PDF</button>
+      <button class="btn-action secondary" id="clearBtn" style="display:none">🗑️ Clear</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">প্রসেস হচ্ছে...</div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none">
+      <h3>✅ PDF তৈরি!</h3>
+      <p id="resultInfo"></p>
+      <a id="downloadLink" class="btn-download" download="images.pdf">⬇️ Download PDF</a>
+    </div>
+
+    <div class="info-note">🔒 ছবি কোথাও আপলোড হয় না — সম্পূর্ণ প্রসেসিং আপনার ডিভাইসেই।</div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const { jsPDF } = window.jspdf;
+    const dropZone = document.getElementById('dropZone');
+    const input = document.getElementById('imgInput');
+    const imgGrid = document.getElementById('imgGrid');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultBox = document.getElementById('resultBox');
+    const resultInfo = document.getElementById('resultInfo');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let images = [];
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    function renderImages() {
+      imgGrid.innerHTML = '';
+      images.forEach((img, i) => {
+        const div = document.createElement('div');
+        div.className = 'img-item';
+        div.innerHTML = `
+          <button class="remove" data-index="${i}">✕</button>
+          <img src="${img.url}" alt="" />
+          <div class="name">${img.file.name}</div>
+        `;
+        div.querySelector('.remove').onclick = () => {
+          URL.revokeObjectURL(images[i].url);
+          images.splice(i, 1);
+          renderImages();
+        };
+        imgGrid.appendChild(div);
+      });
+      convertBtn.disabled = images.length === 0;
+      clearBtn.style.display = images.length ? 'inline-block' : 'none';
+    }
+
+    function addImages(files) {
+      Array.from(files).forEach(f => {
+        if (f.type.startsWith('image/')) {
+          images.push({ file: f, url: URL.createObjectURL(f) });
+        }
+      });
+      renderImages();
+    }
+
+    input.addEventListener('change', (e) => addImages(e.target.files));
+    dropZone.addEventListener('click', () => input.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addImages(e.dataTransfer.files);
+    });
+
+    clearBtn.onclick = () => {
+      images.forEach(i => URL.revokeObjectURL(i.url));
+      images = [];
+      renderImages();
+      resultBox.style.display = 'none';
+    };
+
+    function loadImage(src) {
+      return new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.onerror = rej;
+        img.src = src;
+      });
+    }
+
+    convertBtn.onclick = async () => {
+      if (!images.length) return;
+      progressWrap.classList.add('show');
+      progressFill.style.width = '0%';
+      progressText.textContent = 'PDF তৈরি হচ্ছে...';
+      convertBtn.disabled = true;
+      resultBox.style.display = 'none';
+
+      try {
+        const { jsPDF } = window.jspdf;
+        let pdf = null;
+
+        for (let i = 0; i < images.length; i++) {
+          progressText.textContent = `প্রসেসিং ${i + 1}/${images.length}: ${images[i].file.name}`;
+          const img = await loadImage(images[i].url);
+          const orientation = img.width > img.height ? 'landscape' : 'portrait';
+          const pageW = img.width;
+          const pageH = img.height;
+
+          if (!pdf) {
+            pdf = new jsPDF({
+              orientation,
+              unit: 'px',
+              format: [pageW, pageH]
+            });
+          } else {
+            pdf.addPage([pageW, pageH], orientation);
+          }
+
+          // Convert to canvas (to handle any format)
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+          pdf.addImage(dataUrl, 'JPEG', 0, 0, pageW, pageH, undefined, 'FAST');
+          progressFill.style.width = `${((i + 1) / images.length) * 100}%`;
+        }
+
+        const blob = pdf.output('blob');
+        const url = URL.createObjectURL(blob);
+
+        downloadLink.href = url;
+        resultInfo.textContent = `${images.length}টি ছবি → ১টি PDF • ${formatSize(blob.size)}`;
+        resultBox.style.display = 'block';
+        setTimeout(() => progressWrap.classList.remove('show'), 800);
+      } catch (err) {
+        alert('❌ সমস্যা: ' + err.message);
+        progressWrap.classList.remove('show');
+      } finally {
+        convertBtn.disabled = images.length === 0;
+      }
+    };
+  </script>
+</body>
+</html>
