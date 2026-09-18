@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>Scanner - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <style>
+    .cam-wrap { position:relative; background:#000; border-radius:14px; overflow:hidden; margin:18px 0; }
+    .cam-wrap video { width:100%; display:block; max-height:60vh; object-fit:contain; }
+    .cam-controls { display:flex; gap:12px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+    .cam-controls button { padding:12px 22px; border-radius:10px; border:none; font-weight:600; cursor:pointer; font-size:15px; }
+    .btn-shoot { background:var(--primary); color:#fff; }
+    .btn-stop { background:#eee; color:#333; }
+    .shots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin:20px 0; }
+    .shot { position:relative; background:#fff; border:1px solid var(--border); border-radius:10px; padding:6px; }
+    .shot img { width:100%; border-radius:6px; display:block; }
+    .shot .remove { position:absolute; top:-6px; right:-6px; background:#e11; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:11px; }
+    .filter-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:16px 0; }
+    .filter-row button { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:13px; font-weight:500; }
+    .filter-row button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">📸</span>
+      <h1>Scanner</h1>
+      <p>ক্যামেরা দিয়ে স্ক্যান করে একটাই PDF বানান — কাগজ, নোট, বই সব।</p>
+    </div>
+
+    <div class="cam-wrap" id="camWrap" style="display:none">
+      <video id="video" autoplay playsinline></video>
+    </div>
+
+    <div class="cam-controls">
+      <button class="btn-shoot" id="startBtn">▶️ Camera চালু করুন</button>
+      <button class="btn-shoot" id="shootBtn" style="display:none">📸 ছবি তুলুন</button>
+      <button class="btn-stop" id="stopBtn" style="display:none">⏹️ Stop</button>
+    </div>
+
+    <div class="filter-row" id="filterRow" style="display:none">
+      <button data-f="original" class="active">🎨 Original</button>
+      <button data-f="gray">⚫ Grayscale</button>
+      <button data-f="bw">⚪ B&W</button>
+      <button data-f="magic">✨ Magic</button>
+    </div>
+
+    <div class="shots-grid" id="shots"></div>
+
+    <div class="tool-actions" id="actions" style="display:none">
+      <button class="btn-action primary" id="pdfBtn">📄 Create PDF</button>
+      <button class="btn-action secondary" id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">PDF তৈরি হচ্ছে...</div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none">
+      <h3>✅ PDF তৈরি!</h3>
+      <p id="resultInfo"></p>
+      <a id="downloadLink" class="btn-download" download="scan.pdf">⬇️ Download PDF</a>
+    </div>
+
+    <div class="info-note">
+      🔒 ছবি কোথাও আপলোড হয় না — সব আপনার ডিভাইসেই। Camera access ছাড়া চাইলে নিচে upload option use করুন।
+    </div>
+
+    <!-- Fallback upload -->
+    <div style="margin-top:20px; text-align:center;">
+      <label class="btn-action secondary" style="cursor:pointer; display:inline-block;">
+        📁 অথবা ছবি upload করুন
+        <input type="file" id="uploadInput" accept="image/*" multiple style="display:none" />
+      </label>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const camWrap = document.getElementById('camWrap');
+    const startBtn = document.getElementById('startBtn');
+    const shootBtn = document.getElementById('shootBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const filterRow = document.getElementById('filterRow');
+    const shotsEl = document.getElementById('shots');
+    const actions = document.getElementById('actions');
+    const pdfBtn = document.getElementById('pdfBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const uploadInput = document.getElementById('uploadInput');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultBox = document.getElementById('resultBox');
+    const resultInfo = document.getElementById('resultInfo');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let stream = null;
+    let currentFilter = 'original';
+    let shots = []; // {url, filter}
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    startBtn.onclick = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        });
+        video.srcObject = stream;
+        camWrap.style.display = 'block';
+        startBtn.style.display = 'none';
+        shootBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'inline-block';
+        filterRow.style.display = 'flex';
+      } catch (err) {
+        alert('Camera খোলা গেল না: ' + err.message + '\n\nনিচে upload option use করুন।');
+      }
+    };
+
+    stopBtn.onclick = () => {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      camWrap.style.display = 'none';
+      startBtn.style.display = 'inline-block';
+      shootBtn.style.display = 'none';
+      stopBtn.style.display = 'none';
+    };
+
+    filterRow.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => {
+        filterRow.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.f;
+      };
+    });
+
+    function applyFilter(canvas, filter) {
+      if (filter === 'original') return;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imgData.data;
+
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2];
+        if (filter === 'gray') {
+          const v = 0.299*r + 0.587*g + 0.114*b;
+          d[i] = d[i+1] = d[i+2] = v;
+        } else if (filter === 'bw') {
+          const v = 0.299*r + 0.587*g + 0.114*b;
+          const bw = v > 140 ? 255 : 0;
+          d[i] = d[i+1] = d[i+2] = bw;
+        } else if (filter === 'magic') {
+          // Simple contrast boost + slight warmth
+          const v = 0.299*r + 0.587*g + 0.114*b;
+          const boosted = Math.min(255, Math.max(0, (v - 128) * 1.4 + 150));
+          d[i] = Math.min(255, boosted + 10);
+          d[i+1] = boosted;
+          d[i+2] = Math.max(0, boosted - 10);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function addShot(dataUrl, filter) {
+      shots.push({ url: dataUrl, filter });
+      renderShots();
+    }
+
+    function renderShots() {
+      shotsEl.innerHTML = '';
+      shots.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'shot';
+        div.innerHTML = `
+          <button class="remove" data-i="${i}">✕</button>
+          <img src="${s.url}" />
+        `;
+        div.querySelector('.remove').onclick = () => {
+          shots.splice(i, 1);
+          renderShots();
+        };
+        shotsEl.appendChild(div);
+      });
+      actions.style.display = shots.length ? 'block' : 'none';
+      resultBox.style.display = 'none';
+    }
+
+    shootBtn.onclick = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      applyFilter(canvas, currentFilter);
+      addShot(canvas.toDataURL('image/jpeg', 0.9), currentFilter);
+    };
+
+    uploadInput.addEventListener('change', async (e) => {
+      for (const file of e.target.files) {
+        if (!file.type.startsWith('image/')) continue;
+        const dataUrl = await new Promise(res => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.readAsDataURL(file);
+        });
+        addShot(dataUrl, 'original');
+      }
+      e.target.value = '';
+    });
+
+    clearBtn.onclick = () => {
+      shots = [];
+      renderShots();
+    };
+
+    pdfBtn.onclick = async () => {
+      if (!shots.length) return;
+      progressWrap.classList.add('show');
+      progressFill.style.width = '0%';
+      pdfBtn.disabled = true;
+
+      try {
+        const { jsPDF } = window.jspdf;
+        let pdf = null;
+
+        for (let i = 0; i < shots.length; i++) {
+          progressText.textContent = `পেজ ${i + 1}/${shots.length} তৈরি হচ্ছে...`;
+          const img = await new Promise((res, rej) => {
+            const im = new Image();
+            im.onload = () => res(im);
+            im.onerror = rej;
+            im.src = shots[i].url;
+          });
+
+          const orientation = img.width > img.height ? 'landscape' : 'portrait';
+          if (!pdf) {
+            pdf = new jsPDF({ orientation, unit: 'px', format: [img.width, img.height] });
+          } else {
+            pdf.addPage([img.width, img.height], orientation);
+          }
+          pdf.addImage(shots[i].url, 'JPEG', 0, 0, img.width, img.height, undefined, 'FAST');
+          progressFill.style.width = `${((i + 1) / shots.length) * 100}%`;
+        }
+
+        const blob = pdf.output('blob');
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        resultInfo.textContent = `${shots.length} পেজ • ${formatSize(blob.size)}`;
+        resultBox.style.display = 'block';
+        setTimeout(() => progressWrap.classList.remove('show'), 700);
+      } catch (err) {
+        alert('❌ সমস্যা: ' + err.message);
+        progressWrap.classList.remove('show');
+      } finally {
+        pdfBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
