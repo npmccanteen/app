@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>PDF Compress - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <style>
+    .quality-row { text-align:center; margin:18px 0; }
+    .quality-row label { font-size:14px; color:var(--muted); display:block; margin-bottom:8px; }
+    .quality-row input[type=range] { width:80%; max-width:400px; }
+    .quality-row .val { font-weight:600; color:var(--primary); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">🗜️</span>
+      <h1>PDF Compress</h1>
+      <p>PDF এর সাইজ কমান — কোয়ালিটি ঠিক রেখে।</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="pdfInput" accept="application/pdf" />
+      <span class="dz-icon">📥</span>
+      <div class="dz-title">PDF ফাইল ড্রপ করুন</div>
+      <div class="dz-sub">অথবা ক্লিক করে সিলেক্ট করুন</div>
+    </div>
+
+    <div id="options" style="display:none">
+      <div class="quality-row">
+        <label>ইমেজ কোয়ালিটি: <span class="val" id="qVal">70%</span></label>
+        <input type="range" id="quality" min="30" max="95" value="70" step="5" />
+      </div>
+      <div class="tool-actions">
+        <button class="btn-action primary" id="compressBtn">🗜️ Compress PDF</button>
+        <button class="btn-action secondary" id="clearBtn">🗑️ Clear</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">প্রসেস হচ্ছে...</div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none">
+      <h3>✅ Compress সম্পন্ন!</h3>
+      <p id="resultInfo"></p>
+      <a id="downloadLink" class="btn-download" download="compressed.pdf">⬇️ Download PDF</a>
+    </div>
+
+    <div class="info-note">
+      ⚠️ নোট: ব্রাউজার-ভিত্তিক compress শুধু ইমেজ-heavy PDF তে ভালো কাজ করে। টেক্সট-heavy PDF এ তেমন পরিবর্তন নাও আসতে পারে।
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const { PDFDocument } = PDFLib;
+    const dropZone = document.getElementById('dropZone');
+    const input = document.getElementById('pdfInput');
+    const options = document.getElementById('options');
+    const quality = document.getElementById('quality');
+    const qVal = document.getElementById('qVal');
+    const compressBtn = document.getElementById('compressBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultBox = document.getElementById('resultBox');
+    const resultInfo = document.getElementById('resultInfo');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let currentFile = null;
+    let originalSize = 0;
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    quality.addEventListener('input', () => qVal.textContent = quality.value + '%');
+
+    function loadFile(file) {
+      if (!file || file.type !== 'application/pdf') return alert('শুধু PDF ফাইল দিন');
+      currentFile = file;
+      originalSize = file.size;
+      resultBox.style.display = 'none';
+      options.style.display = 'block';
+    }
+
+    input.addEventListener('change', (e) => loadFile(e.target.files[0]));
+    dropZone.addEventListener('click', () => input.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      loadFile(e.dataTransfer.files[0]);
+    });
+
+    clearBtn.onclick = () => {
+      currentFile = null;
+      options.style.display = 'none';
+      resultBox.style.display = 'none';
+      input.value = '';
+    };
+
+    compressBtn.onclick = async () => {
+      if (!currentFile) return;
+      progressWrap.classList.add('show');
+      progressFill.style.width = '0%';
+      compressBtn.disabled = true;
+      resultBox.style.display = 'none';
+
+      try {
+        const q = parseInt(quality.value) / 100;
+        const bytes = await currentFile.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const total = pdf.numPages;
+
+        const newPdf = await PDFDocument.create();
+
+        for (let i = 1; i <= total; i++) {
+          progressText.textContent = `পেজ ${i}/${total} কমপ্রেস হচ্ছে...`;
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+          const dataUrl = canvas.toDataURL('image/jpeg', q);
+          const imgBytes = await fetch(dataUrl).then(r => r.arrayBuffer());
+          const img = await newPdf.embedJpg(imgBytes);
+
+          const p = newPdf.addPage([viewport.width, viewport.height]);
+          p.drawImage(img, { x: 0, y: 0, width: viewport.width, height: viewport.height });
+
+          progressFill.style.width = `${(i / total) * 100}%`;
+        }
+
+        const outBytes = await newPdf.save();
+        const blob = new Blob([outBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        downloadLink.href = url;
+        const savings = ((1 - blob.size / originalSize) * 100).toFixed(1);
+        resultInfo.textContent = `${formatSize(originalSize)} → ${formatSize(blob.size)} (${savings > 0 ? savings + '% কমেছে' : 'সাইজ বাড়েনি'})`;
+        resultBox.style.display = 'block';
+        setTimeout(() => progressWrap.classList.remove('show'), 700);
+      } catch (err) {
+        alert('❌ সমস্যা: ' + err.message);
+        progressWrap.classList.remove('show');
+      } finally {
+        compressBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
