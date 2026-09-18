@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>PDF to Audio - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <link rel="stylesheet" href="../css/pdf-audio.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">🎧</span>
+      <h1>PDF → Audio</h1>
+      <p>PDF কে শুনে পড়ুন — bus e, walking e, চোখ বন্ধ করে revision।</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="pdfInput" accept="application/pdf" />
+      <span class="dz-icon">📥</span>
+      <div class="dz-title">PDF ফাইল ড্রপ করুন</div>
+      <div class="dz-sub">অথবা ক্লিক করে সিলেক্ট করুন</div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">টেক্সট বের করা হচ্ছে...</div>
+    </div>
+
+    <!-- Player (hidden initially) -->
+    <section class="pa-player" id="paPlayer" style="display:none">
+
+      <div class="pa-file-info">
+        <div class="pa-file-name" id="paFileName">📄 document.pdf</div>
+        <div class="pa-file-meta" id="paFileMeta">পেজ: 0 • শব্দ: 0</div>
+      </div>
+
+      <!-- Voice + Speed Controls -->
+      <div class="pa-controls">
+        <div class="pa-control">
+          <label>🔊 Voice</label>
+          <select id="paVoice"></select>
+        </div>
+        <div class="pa-control">
+          <label>⚡ Speed: <span id="paSpeedVal">1.0x</span></label>
+          <input type="range" id="paSpeed" min="0.5" max="2" step="0.1" value="1" />
+        </div>
+        <div class="pa-control">
+          <label>🎚️ Pitch: <span id="paPitchVal">1.0</span></label>
+          <input type="range" id="paPitch" min="0.5" max="1.5" step="0.1" value="1" />
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="pa-playback">
+        <button class="pa-btn" id="paRestart" title="শুরু থেকে">⏮️</button>
+        <button class="pa-btn" id="paPrev" title="আগের বাক্য">⏪</button>
+        <button class="pa-btn pa-btn-play" id="paPlayPause" title="Play/Pause">▶️</button>
+        <button class="pa-btn" id="paNext" title="পরের বাক্য">⏩</button>
+        <button class="pa-btn" id="paStop" title="Stop">⏹️</button>
+      </div>
+
+      <!-- Current sentence display -->
+      <div class="pa-now-playing">
+        <div class="pa-np-label">এখন পড়ছে</div>
+        <div class="pa-np-text" id="paNowPlaying">—</div>
+      </div>
+
+      <!-- Text Preview -->
+      <details class="pa-text-toggle">
+        <summary>📖 পুরো টেক্সট দেখুন / Edit করুন</summary>
+        <textarea id="paTextarea" rows="10" spellcheck="false"></textarea>
+        <button class="btn-action primary" id="paApplyEdit" style="margin-top:10px">✅ Edit Apply করুন</button>
+      </details>
+
+    </section>
+
+    <div class="info-note" style="margin-top:30px">
+      🔒 <strong>Privacy:</strong> PDF আপনার ডিভাইসেই প্রসেস হয় — কোথাও আপলোড হয় না। TTS আপনার ব্রাউজারের built-in ভয়েস ব্যবহার করে।
+      <br><br>
+      ⚠️ <strong>নোট:</strong> সব ব্রাউজারে সব ভাষার voice নাও থাকতে পারে। Chrome / Edge সবচেয়ে ভালো কাজ করে। Bangla voice না থাকলে English voice দিয়ে English PDF পড়ুন।
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="../js/pdf-audio.js"></script>
+</body>
+</html>
