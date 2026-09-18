@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d6efd" />
+  <title>PDF Split - DocTools</title>
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" href="../icons/icon-192.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tools.css" />
+  <style>
+    .page-info { text-align:center; font-size:14px; color:var(--muted); margin:12px 0; }
+    .range-inputs { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:18px 0; }
+    .range-inputs label { display:flex; flex-direction:column; font-size:13px; color:var(--muted); gap:6px; }
+    .range-inputs input {
+      padding:10px 14px; border:1px solid var(--border); border-radius:10px;
+      font-size:15px; width:120px; outline:none;
+    }
+    .range-inputs input:focus { border-color:var(--primary); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-text">DocTools<small>by Munaf Wasif</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html#tools">Tools</a>
+        <a href="../login.html" class="btn-login">Login</a>
+      </nav>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <main class="tool-page">
+    <div class="tool-header">
+      <span class="tool-icon-lg">✂️</span>
+      <h1>PDF Split</h1>
+      <p>নির্দিষ্ট পেজ রেঞ্জ অনুযায়ী PDF থেকে পেজ আলাদা করুন।</p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="pdfInput" accept="application/pdf" />
+      <span class="dz-icon">📥</span>
+      <div class="dz-title">PDF ফাইল ড্রপ করুন</div>
+      <div class="dz-sub">অথবা ক্লিক করে সিলেক্ট করুন</div>
+    </div>
+
+    <div id="splitOptions" style="display:none">
+      <div class="page-info" id="pageInfo"></div>
+      <div class="range-inputs">
+        <label>শুরু পেজ<input type="number" id="startPage" min="1" value="1" /></label>
+        <label>শেষ পেজ<input type="number" id="endPage" min="1" value="1" /></label>
+      </div>
+      <div class="tool-actions">
+        <button class="btn-action primary" id="splitBtn">✂️ Split PDF</button>
+        <button class="btn-action secondary" id="clearBtn">🗑️ Clear</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">প্রসেস হচ্ছে...</div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none">
+      <h3>✅ Split সম্পন্ন!</h3>
+      <p id="resultInfo"></p>
+      <a id="downloadLink" class="btn-download" download="split.pdf">⬇️ Download PDF</a>
+    </div>
+
+    <div class="info-note">🔒 আপনার ফাইল কোথাও আপলোড হয় না — সব আপনার ডিভাইসেই।</div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 DocTools — Made with ❤️ by <strong>Munaf Wasif</strong></p>
+  </footer>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script>
+    const { PDFDocument } = PDFLib;
+    const dropZone = document.getElementById('dropZone');
+    const input = document.getElementById('pdfInput');
+    const splitOptions = document.getElementById('splitOptions');
+    const pageInfo = document.getElementById('pageInfo');
+    const startPage = document.getElementById('startPage');
+    const endPage = document.getElementById('endPage');
+    const splitBtn = document.getElementById('splitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultBox = document.getElementById('resultBox');
+    const resultInfo = document.getElementById('resultInfo');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let currentFile = null;
+    let totalPages = 0;
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    async function loadFile(file) {
+      if (!file || file.type !== 'application/pdf') return alert('শুধু PDF ফাইল দিন');
+      currentFile = file;
+      resultBox.style.display = 'none';
+
+      const bytes = await file.arrayBuffer();
+      const pdf = await PDFDocument.load(bytes);
+      totalPages = pdf.getPageCount();
+
+      pageInfo.textContent = `📄 ${file.name} • মোট ${totalPages} পেজ • ${formatSize(file.size)}`;
+      startPage.value = 1;
+      endPage.value = totalPages;
+      startPage.max = totalPages;
+      endPage.max = totalPages;
+      splitOptions.style.display = 'block';
+    }
+
+    input.addEventListener('change', (e) => loadFile(e.target.files[0]));
+    dropZone.addEventListener('click', () => input.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      loadFile(e.dataTransfer.files[0]);
+    });
+
+    clearBtn.onclick = () => {
+      currentFile = null;
+      splitOptions.style.display = 'none';
+      resultBox.style.display = 'none';
+      input.value = '';
+    };
+
+    splitBtn.onclick = async () => {
+      if (!currentFile) return;
+      const s = parseInt(startPage.value);
+      const e = parseInt(endPage.value);
+      if (s < 1 || e > totalPages || s > e) return alert('সঠিক পেজ রেঞ্জ দিন');
+
+      progressWrap.classList.add('show');
+      progressFill.style.width = '30%';
+      progressText.textContent = 'Split হচ্ছে...';
+      splitBtn.disabled = true;
+
+      try {
+        const bytes = await currentFile.arrayBuffer();
+        const srcPdf = await PDFDocument.load(bytes);
+        const newPdf = await PDFDocument.create();
+
+        const indices = [];
+        for (let i = s - 1; i < e; i++) indices.push(i);
+        const pages = await newPdf.copyPages(srcPdf, indices);
+        pages.forEach(p => newPdf.addPage(p));
+
+        progressFill.style.width = '80%';
+        const outBytes = await newPdf.save();
+        progressFill.style.width = '100%';
+
+        const blob = new Blob([outBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        downloadLink.href = url;
+        downloadLink.download = `split_${s}-${e}.pdf`;
+        resultInfo.textContent = `পেজ ${s} থেকে ${e} • ${e - s + 1} পেজ • ${formatSize(blob.size)}`;
+        resultBox.style.display = 'block';
+
+        setTimeout(() => progressWrap.classList.remove('show'), 800);
+      } catch (err) {
+        alert('❌ সমস্যা: ' + err.message);
+        progressWrap.classList.remove('show');
+      } finally {
+        splitBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
